@@ -1,0 +1,236 @@
+<!doctype html>
+<html lang="bn"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>FAN BAZAR অর্ডার</title>
+<meta name="theme-color" content="#142b43">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="FAN BAZAR">
+<style>
+:root{--navy:#142b43;--gold:#d8a62d;--bg:#f3f5f7;--card:#fff;--ink:#17212b;--mute:#657484;--line:#dce2e8;--chip:#e0e6ec;--red:#a12626;--note:#fff8e7;--noteb:#f0d99b}
+@media (prefers-color-scheme:dark){:root{--bg:#0f1720;--card:#18232f;--ink:#e8eef4;--mute:#9aabbb;--line:#2a3948;--chip:#243342;--note:#2b2412;--noteb:#5b4a1c}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Noto Sans Bengali","Hind Siliguri",system-ui,-apple-system,sans-serif;line-height:1.5;padding-bottom:env(safe-area-inset-bottom,0px)}
+header{background:var(--navy);color:#fff;padding:calc(14px + env(safe-area-inset-top,0px)) 16px 14px;border-bottom:4px solid var(--gold);display:flex;justify-content:space-between;align-items:center;gap:10px}
+header h1{margin:0;font-size:22px}header p{margin:2px 0 0;font-size:13px;color:#cfdce8}
+#who{font-size:12px;color:#cfdce8;text-align:right}#who button{margin-top:4px;padding:6px 12px;font-size:13px;background:#2b4560}
+main{max-width:980px;margin:auto;padding:14px}
+button{border:0;border-radius:9px;padding:11px 14px;background:var(--navy);color:#fff;font:inherit;font-weight:650;cursor:pointer}
+button:disabled{opacity:.55}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid var(--gold);outline-offset:1px}
+button.alt{background:var(--chip);color:var(--ink)}button.danger{background:var(--red)}
+.tabs{display:flex;gap:8px;margin-bottom:14px}.tabs button{flex:1;background:var(--chip);color:var(--ink)}.tabs button.on{background:var(--navy);color:#fff}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:14px}
+h2{font-size:17px;margin:0 0 10px}
+label{display:block;font-weight:650;font-size:13px;margin:9px 0 4px}
+input,select{width:100%;min-height:44px;padding:9px 10px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--ink);font:inherit}
+.row{display:flex;gap:10px;flex-wrap:wrap}.row>*{flex:1;min-width:140px}
+.chips{display:flex;gap:8px;flex-wrap:wrap;padding-bottom:6px;margin:10px 0}
+.chips button{background:var(--chip);color:var(--ink);white-space:nowrap;padding:8px 14px;border-radius:99px}.chips button.on{background:var(--gold);color:#1b1500}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px}
+.prod{border:1px solid var(--line);border-radius:12px;overflow:hidden;background:var(--card)}
+.prod .ph{height:130px;display:flex;align-items:center;justify-content:center;background:var(--bg);color:var(--mute);font-size:13px}
+.prod img{width:100%;height:130px;object-fit:contain;background:#fff}
+.prod .in{padding:12px}.prod b{display:block}.mute{font-size:12px;color:var(--mute)}
+.qty{display:flex;gap:6px;align-items:center}.qty button{width:44px;padding:0;min-height:44px;background:var(--chip);color:var(--ink);font-size:20px}.qty input{text-align:center}
+.item{display:flex;justify-content:space-between;gap:10px;align-items:center;border-bottom:1px solid var(--line);padding:9px 0}
+.item:last-child{border-bottom:0}
+.total{display:flex;justify-content:space-between;font-weight:700;padding:10px 0;font-size:16px}
+.note{background:var(--note);border:1px solid var(--noteb);border-radius:9px;padding:10px;font-size:13px;margin-bottom:12px}
+.pill{display:inline-block;background:#fff0c2;color:#4a3800;border-radius:99px;padding:2px 9px;font-size:12px}
+.order{border:1px solid var(--line);border-radius:10px;padding:12px;margin:10px 0}
+.empty{padding:14px;text-align:center;color:var(--mute)}
+.hidden{display:none!important}
+.toast{position:fixed;left:12px;right:12px;bottom:calc(14px + env(safe-area-inset-bottom,0px));max-width:520px;margin:auto;background:var(--navy);color:#fff;padding:12px 14px;border-radius:10px;z-index:20;box-shadow:0 6px 20px rgba(0,0,0,.3)}
+#login{max-width:420px;margin:30px auto}
+#lerr{color:var(--red);font-size:13px;min-height:20px;margin-top:8px}
+#offline{background:#7a5a00;color:#fff;text-align:center;font-size:13px;padding:6px}
+</style></head><body>
+<div id="offline" class="hidden">ইন্টারনেট নেই। আগের লোড করা তথ্য দেখা যাচ্ছে, অর্ডার নেট এলে জমা হবে।</div>
+<header><div><h1>FAN BAZAR</h1><p>ফ্যান অর্ডার ফর্ম</p></div><div id="who" class="hidden"><div id="whoMail"></div><button id="logout">লগ আউট</button></div></header>
+<main>
+
+<section id="login" class="panel hidden">
+ <h2>লগইন করুন</h2>
+ <form id="lform">
+  <label for="em">ইমেইল</label><input id="em" type="email" autocomplete="username" inputmode="email" required>
+  <label for="pw">পাসওয়ার্ড</label><input id="pw" type="password" autocomplete="current-password" required>
+  <button id="lbtn" style="width:100%;margin-top:14px">লগইন</button>
+  <div id="lerr" role="alert"></div>
+ </form>
+ <div class="mute">ইমেইল ও পাসওয়ার্ড ম্যানেজারের কাছ থেকে নিন।</div>
+</section>
+
+<div id="app" class="hidden">
+<div class="tabs"><button class="on" data-tab="order">অর্ডার দিন</button><button id="mtab" class="hidden" data-tab="mgr">অর্ডার ম্যানেজার</button><button id="ftab" class="hidden" data-tab="addfan">ফ্যান এড</button></div>
+
+<section id="order">
+ <div class="panel"><h2>দোকানের তথ্য</h2>
+  <div class="row"><div><label for="shop">দোকানের নাম *</label><input id="shop" placeholder="দোকানের নাম লিখুন"></div>
+  <div><label for="emp">কর্মচারীর নাম</label><input id="emp" placeholder="আপনার নাম"></div></div></div>
+ <div class="panel"><h2>ফ্যান বেছে নিন</h2>
+  <div class="chips" id="chips"></div>
+  <div id="products" class="grid"><div class="empty">লোড হচ্ছে…</div></div></div>
+ <div class="panel"><h2>এই অর্ডারের তালিকা</h2>
+  <div id="cart"></div>
+  <div class="row" style="margin-top:8px"><button id="submit">অর্ডার জমা দিন</button><button id="clear" class="alt">তালিকা খালি করুন</button></div></div>
+</section>
+
+<section id="addfan" class="hidden">
+  <div class="panel"><h2>ব্র্যান্ড যোগ করুন</h2>
+   <div id="blist" class="chips"></div>
+   <div class="row"><input id="bn" aria-label="ব্র্যান্ডের নাম" placeholder="ব্র্যান্ডের নাম (কমা দিয়ে একাধিক)"><button id="badd">ব্র্যান্ড যোগ করুন</button></div></div>
+  <div class="panel"><h2>নতুন ফ্যান যোগ করুন</h2>
+   <div class="note">এখানে যোগ করলেই ফ্যানটি সবার অর্ডার পেজে দেখাবে।</div>
+   <label for="fn">ফ্যানের নাম / মডেল</label><input id="fn" placeholder='যেমন 12" Table Hi-Speed Fan'>
+   <label for="fb">ব্র্যান্ড</label><select id="fb"></select>
+   <label for="fc">কালার (কমা দিয়ে)</label><input id="fc" placeholder="Yellow, Black, Green">
+   <label for="fp">ছবি (ঐচ্ছিক)</label><input id="fp" type="file" accept="image/*">
+   <button id="fadd" style="margin-top:10px">ফ্যান যোগ করুন</button></div>
+  <div class="panel"><h2>সব ফ্যান</h2><div id="flist"></div></div>
+</section>
+
+<section id="mgr" class="hidden">
+  <div class="panel"><h2>সব অর্ডার</h2>
+   <div class="row"><div><label for="fs">দোকান</label><select id="fs"></select></div><div><label for="fst">অবস্থা</label><select id="fst"></select></div></div>
+   <div id="orders"></div>
+   <div class="row" style="margin-top:8px"><button id="csv" class="alt">CSV ডাউনলোড (এক্সেলে খোলে)</button></div></div>
+  <div class="panel"><h2>WhatsApp নম্বর</h2><div class="note">অর্ডার জমার পর এই নম্বরে সারাংশ পাঠানোর লিংক আসবে। দেশের কোডসহ লিখুন, যেমন 8801XXXXXXXXX।</div>
+   <div class="row"><input id="wa" inputmode="numeric" aria-label="WhatsApp নম্বর" placeholder="8801XXXXXXXXX"><button id="wasave">সেভ করুন</button></div></div>
+</section>
+</div>
+</main>
+
+<script type="module">
+import {initializeApp} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
+import {getAuth,onAuthStateChanged,signInWithEmailAndPassword,signOut} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
+import {initializeFirestore,persistentLocalCache,persistentMultipleTabManager,collection,doc,addDoc,setDoc,updateDoc,deleteDoc,onSnapshot,query,orderBy,limit} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
+
+const firebaseConfig={
+  apiKey:"AIzaSyAe7D1b9NQpoaCHp_NbPZLTYNwk75DRmp8",
+  authDomain:"fan-bazar.firebaseapp.com",
+  projectId:"fan-bazar",
+  storageBucket:"fan-bazar.firebasestorage.app",
+  messagingSenderId:"756294382192",
+  appId:"1:756294382192:web:11541fe29f254eb0ce7ab5"
+};
+const MANAGER='manager@fanbazar.com';
+const app=initializeApp(firebaseConfig),auth=getAuth(app);
+const db=initializeFirestore(app,{localCache:persistentLocalCache({tabManager:persistentMultipleTabManager()})});
+
+const $=id=>document.getElementById(id),STAT=['নতুন','কনফার্মড'];
+let isMgr=false,brands=[],fans=[],orders=[],waNum='',cart=[],brand='',ready=false,unsubs=[];
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const pcs=a=>a.reduce((s,x)=>s+x.qty,0),code=o=>'#'+(o.no||'').toString().toUpperCase();
+function toast(m,ms=2600){const t=document.createElement('div');t.className='toast';t.textContent=m;document.body.appendChild(t);setTimeout(()=>t.remove(),ms)}
+const fail=e=>toast(e&&e.code==='permission-denied'?'এই কাজের অনুমতি নেই।':'সংরক্ষণ হয়নি। আবার চেষ্টা করুন।');
+
+/* ---------- অর্ডার পেজ ---------- */
+function chips(){if(brand&&!brands.some(b=>b.name===brand))brand='';
+ $('chips').innerHTML=[{name:''},...brands].map(b=>`<button class="${b.name===brand?'on':''}" data-b="${esc(b.name)}">${b.name?esc(b.name):'সব ব্র্যান্ড'}</button>`).join('');
+ $('chips').querySelectorAll('button').forEach(x=>x.onclick=()=>{brand=x.dataset.b;chips();prods()})}
+function prods(){if(!ready)return;const l=fans.filter(f=>!brand||f.brand===brand);
+ // বর্তমান পিস/পছন্দ মনে রাখি, যাতে ডাটা বদলালে ফর্ম রিসেট না হয়
+ const keep={};document.querySelectorAll('#products [data-fid]').forEach(el=>{keep[el.dataset.fid]={q:el.querySelector('input').value,c:el.querySelector('.cs').value,b:el.querySelector('.bs').value}});
+ $('products').innerHTML=l.length?l.map(f=>`<article class="prod" data-fid="${esc(f.id)}">${f.image?`<img src="${esc(f.image)}" alt="${esc(f.name)}">`:'<div class="ph">ছবি নেই</div>'}
+ <div class="in"><b>${esc(f.name)}</b><label for="b${f.id}">ব্র্যান্ড</label><select class="bs" id="b${f.id}">${brands.map(b=>`<option ${b.name===f.brand?'selected':''}>${esc(b.name)}</option>`).join('')}</select>
+ <label for="c${f.id}">কালার</label><select class="cs" id="c${f.id}">${(f.colors||[]).map(c=>`<option>${esc(c)}</option>`).join('')}</select>
+ <label for="q${f.id}">পিস</label><div class="qty"><button type="button" onclick="step('${f.id}',-1)" aria-label="কমান">−</button><input id="q${f.id}" type="number" min="0" value="0" inputmode="numeric"><button type="button" onclick="step('${f.id}',1)" aria-label="বাড়ান">+</button></div>
+ <button style="width:100%;margin-top:10px" onclick="add('${f.id}')">তালিকায় যোগ করুন</button></div></article>`).join(''):'<div class="empty">কোনো ফ্যান নেই। ম্যানেজার নতুন ফ্যান যোগ করলে এখানে দেখাবে।</div>';
+ for(const[id,v]of Object.entries(keep)){const q=$('q'+id);if(!q)continue;q.value=v.q;const c=$('c'+id),b=$('b'+id);if([...c.options].some(o=>o.value===v.c))c.value=v.c;if([...b.options].some(o=>o.value===v.b))b.value=v.b}}
+window.step=(id,d)=>{const i=$('q'+id);i.value=Math.max(0,(+i.value||0)+d)};
+window.add=id=>{const f=fans.find(x=>x.id===id),q=+$('q'+id).value,c=$('c'+id).value,b=$('b'+id).value;
+ if(!Number.isInteger(q)||q<1)return toast('পিস সংখ্যা ১ বা তার বেশি দিন।');
+ const ex=cart.find(x=>x.fanId===id&&x.color===c&&x.brand===b);if(ex)ex.qty+=q;else cart.push({fanId:id,fan:f.name,brand:b,color:c,qty:q});
+ $('q'+id).value=0;showCart();toast(`${f.name} (${c}) যোগ হয়েছে`)};
+function showCart(){$('cart').innerHTML=cart.length?cart.map((x,i)=>`<div class="item"><div><b>${esc(x.fan)}</b><div class="mute">${esc(x.brand)}, ${esc(x.color)}, ${x.qty} পিস</div></div><button class="alt" onclick="rm(${i})">বাদ দিন</button></div>`).join('')+`<div class="total"><span>মোট</span><span>${pcs(cart)} পিস</span></div>`:'<div class="empty">কোনো ফ্যান যোগ করা হয়নি। উপর থেকে ফ্যান বেছে “তালিকায় যোগ করুন” চাপুন।</div>'}
+window.rm=i=>{cart.splice(i,1);showCart()};
+$('clear').onclick=()=>{cart=[];showCart()};
+function summary(o){return `FAN BAZAR অর্ডার ${code(o)}\nদোকান: ${o.shop}\nকর্মচারী: ${o.employee||'—'}\n`+o.items.map(x=>`• ${x.brand} ${x.fan} (${x.color}): ${x.qty} পিস`).join('\n')+`\nমোট: ${pcs(o.items)} পিস`}
+$('submit').onclick=async()=>{const shop=$('shop').value.trim();
+ if(!shop)return toast('দোকানের নাম লিখুন।');if(!cart.length)return toast('তালিকায় ফ্যান যোগ করুন।');
+ const now=Date.now(),o={no:now.toString(36).slice(-5),ts:now,shop,employee:$('emp').value.trim(),by:auth.currentUser?.email||'',items:cart.map(x=>({...x})),status:'নতুন',date:new Date(now).toLocaleString('bn-BD')};
+ $('submit').disabled=true;
+ try{
+  // অফলাইনে addDoc-এর প্রমিস নেট না এলে শেষ হয় না, তাই সার্ভার কনফার্ম না আসা পর্যন্ত আটকে থাকি না
+  const p=addDoc(collection(db,'orders'),o);
+  if(navigator.onLine)await p;else p.catch(fail);
+ }catch(e){$('submit').disabled=false;return fail(e)}
+ $('submit').disabled=false;
+ cart=[];showCart();$('shop').value='';
+ const link=waNum?`https://wa.me/${waNum}?text=${encodeURIComponent(summary(o))}`:'';
+ const m=document.createElement('div');m.className='toast';
+ m.append(`অর্ডার ${code(o)} ${navigator.onLine?'জমা হয়েছে। ':'সেভ হয়েছে, নেট এলে জমা হবে। '}`);
+ if(link){const a=document.createElement('a');a.href=link;a.target='_blank';a.rel='noopener';a.style.cssText='color:#ffd76a;font-weight:700';a.textContent='WhatsApp-এ পাঠান';m.append(a)}
+ document.body.appendChild(m);setTimeout(()=>m.remove(),7000)};
+
+/* ---------- ম্যানেজার: অর্ডার ---------- */
+function drawOrders(){const sf=$('fs'),old=sf.value,shops=[...new Set(orders.map(o=>o.shop))];
+ sf.innerHTML='<option value="">সব দোকান</option>'+shops.map(s=>`<option>${esc(s)}</option>`).join('');if(shops.includes(old))sf.value=old;
+ const st=$('fst').value,l=orders.filter(o=>(!sf.value||o.shop===sf.value)&&(!st||o.status===st));
+ $('orders').innerHTML=l.length?l.map(o=>`<div class="order"><div class="row"><div><b>${code(o)} ${esc(o.shop)}</b> <span class="pill">${esc(o.status)}</span><div class="mute">${esc(o.date)}, কর্মচারী: ${esc(o.employee||'—')}</div></div>
+ ${o.status==='কনফার্মড'?'':`<div><button onclick="setSt('${o.id}','কনফার্মড')">কনফার্ম করুন</button></div>`}</div>
+ ${(o.items||[]).map(x=>`<div class="item"><span>${esc(x.brand)} ${esc(x.fan)} (${esc(x.color)})</span><b>${x.qty} পিস</b></div>`).join('')}
+ <div class="total"><span>মোট</span><span>${pcs(o.items||[])} পিস</span></div>
+ <button class="danger" onclick="delO('${o.id}')">অর্ডার মুছুন</button></div>`).join(''):'<div class="empty">এখনও কোনো অর্ডার নেই।</div>'}
+window.setSt=(id,s)=>updateDoc(doc(db,'orders',id),{status:s}).catch(fail);
+window.delO=id=>{if(confirm('অর্ডারটি মুছবেন?'))deleteDoc(doc(db,'orders',id)).catch(fail)};
+$('fs').onchange=drawOrders;$('fst').onchange=drawOrders;
+$('fst').innerHTML='<option value="">সব অবস্থা</option>'+STAT.map(s=>`<option>${s}</option>`).join('');
+$('csv').onclick=()=>{if(!orders.length)return toast('এক্সপোর্ট করার মতো অর্ডার নেই।');
+ const q=v=>'"'+String(v??'').replace(/"/g,'""')+'"',rows=[['অর্ডার','তারিখ','দোকান','কর্মচারী','ব্র্যান্ড','ফ্যান','কালার','পিস','অবস্থা']];
+ orders.forEach(o=>(o.items||[]).forEach(x=>rows.push([o.no,o.date,o.shop,o.employee,x.brand,x.fan,x.color,x.qty,o.status])));
+ const blob=new Blob(['﻿'+rows.map(r=>r.map(q).join(',')).join('\n')],{type:'text/csv;charset=utf-8'});
+ const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='fan-bazar-orders.csv';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),4000)};
+
+/* ---------- ম্যানেজার: ফ্যান ও ব্র্যান্ড ---------- */
+function drawAdmin(){$('blist').innerHTML=brands.map(b=>`<span class="pill">${esc(b.name)} <a href="#" role="button" aria-label="${esc(b.name)} মুছুন" onclick="delB('${b.id}');return false" style="color:inherit;text-decoration:none">✕</a></span>`).join('')||'<span class="mute">কোনো ব্র্যান্ড নেই।</span>';
+ const v=$('fb').value;$('fb').innerHTML=brands.map(b=>`<option>${esc(b.name)}</option>`).join('');if(brands.some(b=>b.name===v))$('fb').value=v;
+ $('flist').innerHTML=fans.map(f=>`<div class="item"><div><b>${esc(f.name)}</b><div class="mute">${esc(f.brand)}, ${(f.colors||[]).map(esc).join(', ')}</div></div><button class="danger" onclick="delF('${f.id}')">মুছুন</button></div>`).join('')||'<div class="empty">কোনো ফ্যান নেই।</div>';
+ if(document.activeElement!==$('wa'))$('wa').value=waNum}
+window.delF=id=>{if(confirm('ফ্যানটি মুছবেন? অর্ডার পেজ থেকেও সরে যাবে।'))deleteDoc(doc(db,'fans',id)).catch(fail)};
+window.delB=id=>{const b=brands.find(x=>x.id===id);if(fans.some(f=>f.brand===b.name))return toast('এই ব্র্যান্ডের ফ্যান আছে। আগে ফ্যানগুলো মুছুন।');if(confirm(b.name+' মুছবেন?'))deleteDoc(doc(db,'brands',id)).catch(fail)};
+$('badd').onclick=async()=>{const n=$('bn').value.split(',').map(x=>x.trim()).filter(Boolean).filter((x,i,a)=>a.findIndex(y=>y.toLowerCase()===x.toLowerCase())===i&&!brands.some(b=>b.name.toLowerCase()===x.toLowerCase()));
+ if(!n.length)return toast('নতুন ব্র্যান্ডের নাম লিখুন (আগেরগুলো আবার নয়)।');
+ try{for(const x of n)await addDoc(collection(db,'brands'),{name:x});$('bn').value='';toast('ব্র্যান্ড যোগ হয়েছে: '+n.join(', '))}catch(e){fail(e)}};
+const shrink=f=>new Promise((res,rej)=>{const r=new FileReader();r.onerror=()=>rej();r.onload=()=>{const i=new Image();i.onerror=()=>rej();i.onload=()=>{const k=Math.min(1,800/Math.max(i.width,i.height)),c=document.createElement('canvas');c.width=Math.round(i.width*k);c.height=Math.round(i.height*k);const x=c.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,c.width,c.height);x.drawImage(i,0,0,c.width,c.height);res(c.toDataURL('image/jpeg',.78))};i.src=r.result};r.readAsDataURL(f)});
+$('fadd').onclick=async()=>{const name=$('fn').value.trim(),b=$('fb').value,colors=$('fc').value.split(',').map(x=>x.trim()).filter(Boolean),file=$('fp').files[0];
+ if(!b)return toast('আগে একটি ব্র্যান্ড যোগ করুন।');if(!name)return toast('ফ্যানের নাম লিখুন।');if(!colors.length)return toast('কালার লিখুন।');
+ try{let image='';if(file){image=await shrink(file).catch(()=>null);if(image===null)return toast('JPG বা PNG ছবি দিন, এই ছবিটি পড়া যায়নি।')}
+  await addDoc(collection(db,'fans'),{name,brand:b,colors,image});$('fn').value='';$('fc').value='';$('fp').value='';toast('ফ্যান যোগ হয়েছে। সবার অর্ডার পেজে দেখাবে।')}catch(e){fail(e)}};
+$('wasave').onclick=()=>setDoc(doc(db,'config','main'),{wa:$('wa').value.replace(/\D/g,'')}).then(()=>toast('নম্বর সেভ হয়েছে।')).catch(fail);
+
+document.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>{document.querySelectorAll('[data-tab]').forEach(x=>x.classList.toggle('on',x===b));
+ ['order','mgr','addfan'].forEach(id=>$(id).classList.toggle('hidden',id!==b.dataset.tab))});
+
+/* ---------- লগইন ও ডাটা সংযোগ ---------- */
+const LERR={'auth/invalid-credential':'ইমেইল বা পাসওয়ার্ড ভুল।','auth/invalid-email':'ইমেইলের ফরম্যাট ঠিক নয়।','auth/user-disabled':'এই অ্যাকাউন্ট বন্ধ করা আছে।','auth/too-many-requests':'অনেকবার ভুল হয়েছে। কিছুক্ষণ পরে চেষ্টা করুন।','auth/network-request-failed':'ইন্টারনেট নেই। নেট চালু করে আবার চেষ্টা করুন।'};
+$('lform').onsubmit=async e=>{e.preventDefault();$('lerr').textContent='';$('lbtn').disabled=true;
+ try{await signInWithEmailAndPassword(auth,$('em').value.trim(),$('pw').value)}catch(x){$('lerr').textContent=LERR[x.code]||'লগইন হয়নি। আবার চেষ্টা করুন।'}
+ $('lbtn').disabled=false};
+$('logout').onclick=()=>signOut(auth);
+
+function stop(){unsubs.forEach(f=>f());unsubs=[];brands=[];fans=[];orders=[];ready=false;isMgr=false}
+function start(u){
+ isMgr=(u.email||'').toLowerCase()===MANAGER;
+ $('mtab').classList.toggle('hidden',!isMgr);$('ftab').classList.toggle('hidden',!isMgr);
+ const err=()=>{$('products').innerHTML='<div class="empty">তালিকা লোড হয়নি। পেজ রিফ্রেশ করুন বা পরে চেষ্টা করুন।</div>'};
+ const map=s=>s.docs.map(d=>({id:d.id,...d.data()}));
+ unsubs.push(onSnapshot(collection(db,'brands'),s=>{brands=map(s).sort((a,b)=>a.name.localeCompare(b.name));chips();prods();if(isMgr)drawAdmin()},err));
+ unsubs.push(onSnapshot(collection(db,'fans'),s=>{fans=map(s).sort((a,b)=>(a.brand+a.name).localeCompare(b.brand+b.name));ready=true;prods();if(isMgr)drawAdmin()},err));
+ unsubs.push(onSnapshot(doc(db,'config','main'),s=>{waNum=(s.data()||{}).wa||'';if(isMgr)drawAdmin()},()=>{}));
+ if(isMgr)unsubs.push(onSnapshot(query(collection(db,'orders'),orderBy('ts','desc'),limit(300)),s=>{orders=map(s);drawOrders()},()=>toast('অর্ডার লোড হয়নি।')));
+}
+onAuthStateChanged(auth,u=>{
+ stop();
+ if(u){$('login').classList.add('hidden');$('app').classList.remove('hidden');$('who').classList.remove('hidden');$('whoMail').textContent=u.email;
+  document.querySelector('[data-tab="order"]').click();showCart();chips();start(u)}
+ else{$('app').classList.add('hidden');$('who').classList.add('hidden');$('login').classList.remove('hidden');$('pw').value='';cart=[]}
+});
+const net=()=>$('offline').classList.toggle('hidden',navigator.onLine);addEventListener('online',net);addEventListener('offline',net);net();
+
+if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
+</script></body></html>
